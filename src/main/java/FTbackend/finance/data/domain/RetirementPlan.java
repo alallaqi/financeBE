@@ -1,9 +1,6 @@
 package FTbackend.finance.data.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class RetirementPlan {
@@ -15,6 +12,11 @@ public class RetirementPlan {
     private double monthlyContribution;
     private double currentSavings;
     private double annualReturn;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
 
     // Getters and setters
     public Long getId() { return id; }
@@ -29,4 +31,11 @@ public class RetirementPlan {
     public void setCurrentSavings(double currentSavings) { this.currentSavings = currentSavings; }
     public double getAnnualReturn() { return annualReturn; }
     public void setAnnualReturn(double annualReturn) { this.annualReturn = annualReturn; }
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

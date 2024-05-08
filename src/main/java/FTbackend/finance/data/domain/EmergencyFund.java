@@ -1,9 +1,6 @@
 package FTbackend.finance.data.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class EmergencyFund {
@@ -20,6 +17,10 @@ public class EmergencyFund {
     private double totalMonthlyExpenses;
     private int coverageMonths;
     private double emergencyFundGoal;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     // Constructors
     public EmergencyFund() {}
@@ -103,5 +104,12 @@ public class EmergencyFund {
 
     public void setEmergencyFundGoal(double emergencyFundGoal) {
         this.emergencyFundGoal = emergencyFundGoal;
+    }
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

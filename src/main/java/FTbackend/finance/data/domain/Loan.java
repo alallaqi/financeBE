@@ -1,9 +1,6 @@
 package FTbackend.finance.data.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Loan {
@@ -13,6 +10,10 @@ public class Loan {
     private double principal;
     private double interestRate;
     private int term;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     // Default constructor
     public Loan() {
@@ -57,5 +58,12 @@ public class Loan {
 
     public void setTerm(int term) {
         this.term = term;
+    }
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
