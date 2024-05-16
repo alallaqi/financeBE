@@ -41,7 +41,7 @@ public class SecurityConfig {
                                 "/api/mortgage/calculate", "/api/retirement/calculate",
                                 "/api/investment/calculate", "/api/loan/calculate",
                                 "/api/emergencyfund/calculate").permitAll()
-                        .requestMatchers("/api/users/profile").authenticated()
+                        .requestMatchers("/api/users/profile/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

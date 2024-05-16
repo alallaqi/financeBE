@@ -46,6 +46,30 @@ public class UserService implements UserDetailsService {
         return userRepository.save(newUser);
     }
 
+    @Transactional
+    public User updateUserProfile(Long id, String newUsername, String newEmail) {
+        User user = userRepository.findById(id).orElseThrow(() ->
+                new UsernameNotFoundException("User not found with id: " + id)
+        );
+
+        // Check if the username or email needs to be updated and isn't taken by another user
+        if (!user.getUsername().equals(newUsername)) {
+            userRepository.findByUsername(newUsername).ifPresent(s -> {
+                throw new IllegalArgumentException("Username already exists");
+            });
+            user.setUsername(newUsername);
+        }
+
+        if (!user.getEmail().equals(newEmail)) {
+            userRepository.findByEmail(newEmail).ifPresent(s -> {
+                throw new IllegalArgumentException("Email already exists");
+            });
+            user.setEmail(newEmail);
+        }
+
+        return userRepository.save(user);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
