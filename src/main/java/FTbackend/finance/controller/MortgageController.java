@@ -1,12 +1,19 @@
 package FTbackend.finance.controller;
 
 import FTbackend.finance.business.service.MortgageService;
+import FTbackend.finance.data.domain.Calculation;
 import FTbackend.finance.data.domain.Mortgage;
+import FTbackend.finance.data.domain.User;
+import FTbackend.finance.data.repository.CalculationRepository;
+import FTbackend.finance.data.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mortgage")
@@ -17,24 +24,32 @@ public class MortgageController {
     @Autowired
     private MortgageService mortgageService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CalculationRepository calculationRepository;
+
     @PostMapping("/calculate")
-    public ResponseEntity<?> calculateMortgage(@RequestBody Mortgage mortgage) {
-        log.info("Received mortgage calculation request with principal={}, interestRate={}, term={}",
-                mortgage.getPrincipal(), mortgage.getInterestRate(), mortgage.getTerm());
+    public ResponseEntity<?> calculateMortgage(@RequestBody Map<String, Object> payload, Authentication authentication) {
+        log.info("Received mortgage calculation request with payload={}", payload);
 
-        try {
-            double result = mortgageService.calculateMonthlyPayment(
-                    mortgage.getPrincipal(), mortgage.getInterestRate(), mortgage.getTerm());
+        double principal = Double.parseDouble(payload.get("principal").toString());
+        double annualInterestRate = Double.parseDouble(payload.get("interestRate").toString());
+        int termInYears = Integer.parseInt(payload.get("term").toString());
 
-            if (Double.isNaN(result)) {
-                log.error("Calculation resulted in NaN. Input values may be incorrect or lead to undefined operations.");
-                return ResponseEntity.badRequest().body("Calculation resulted in NaN. Check input values.");
-            }
+        double result = mortgageService.calculateMonthlyPayment(principal, annualInterestRate, termInYears);
 
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("Error calculating mortgage payment", e);
-            return ResponseEntity.internalServerError().body("An error occurred during the calculation.");
+        // Save the calculation for the authenticated user
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user != null) {
+            Calculation calculation = new Calculation();
+            calculation.setType("Mortgage");
+            calculation.setResult(result);
+            calculation.setUser(user);
+            calculationRepository.save(calculation);
         }
+        return ResponseEntity.ok(Map.of("mortgageResult", result));
     }
 }

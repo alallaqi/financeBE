@@ -26,6 +26,10 @@ public class LoanService {
     public double calculateMonthlyPayment(double principal, double annualRate, int years) {
         double monthlyRate = annualRate / 100 / 12;
         int totalPayments = years * 12;
+        if (annualRate == 0) {
+            return principal / totalPayments;
+        }
+
         return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -totalPayments));
     }
 }

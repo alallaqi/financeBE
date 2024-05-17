@@ -1,5 +1,7 @@
 package FTbackend.finance.business.service;
 
+import FTbackend.finance.data.domain.Calculation;
+import FTbackend.finance.data.repository.CalculationRepository;
 import FTbackend.finance.data.domain.User;
 import FTbackend.finance.data.repository.UserRepository;
 import FTbackend.finance.util.JwtUtil;
@@ -12,23 +14,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final CalculationRepository calculationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, CalculationRepository calculationRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.calculationRepository = calculationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
+
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
+    }
+
+    public List<Calculation> getUserCalculations(Long userId) {
+        return calculationRepository.findByUserId(userId);
     }
 
     @Transactional

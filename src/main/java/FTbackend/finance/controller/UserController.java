@@ -1,25 +1,20 @@
 package FTbackend.finance.controller;
 
-import FTbackend.finance.data.domain.User;
 import FTbackend.finance.business.service.UserService;
-import org.slf4j.LoggerFactory;
+import FTbackend.finance.data.domain.User;
+import FTbackend.finance.data.domain.Calculation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
 
     private final UserService userService;
 
@@ -50,26 +45,27 @@ public class UserController {
         }
     }
 
-
-    @PutMapping("/profile/{id}")
-    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody Map<String, String> updates) {
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long id) {
         try {
-            String newUsername = updates.get("username");
-            String newEmail = updates.get("email");
-            User updatedUser = userService.updateUserProfile(id, newUsername, newEmail);
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", updatedUser.getId());
-            response.put("username", updatedUser.getUsername());
-            response.put("email", updatedUser.getEmail());
-            return ResponseEntity.ok(response);
-        } catch (UsernameNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            User user = userService.findById(id);
+            List<Calculation> calculations = userService.getUserCalculations(id);
+            if (user != null) {
+                Map<String, Object> result = Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "calculations", calculations
+                );
+                System.out.println("Profile fetched: " + result);
+                return ResponseEntity.ok(result);
+            } else {
+                System.out.println("User not found for ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+        } catch (Exception e) {
+            System.out.println("Error retrieving user profile: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
-
-
 }
